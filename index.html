@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Say It Strong — Voice Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FAF6EE;
+    --panel: #F0E8D8;
+    --ink: #2B2B36;
+    --ink-soft: #5C5A63;
+    --gold: #D9A441;
+    --gold-deep: #B8842A;
+    --sage: #5B8266;
+    --sage-bg: #E4EBE2;
+    --brick: #B5533C;
+    --brick-bg: #F3E3DE;
+    --ring: rgba(217,164,65,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Atkinson Hyperlegible', sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:24px 16px 60px;
+  }
+  h1,h2,.display{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .wrap{width:100%;max-width:640px;}
+
+  header{text-align:center;margin-bottom:20px;}
+  header h1{font-size:clamp(28px,6vw,36px);margin:0 0 4px;color:var(--ink);}
+  header p{margin:0;color:var(--ink-soft);font-size:16px;}
+
+  .card{
+    background:#fff;
+    border:2px solid var(--panel);
+    border-radius:20px;
+    padding:28px 22px;
+    margin-bottom:18px;
+    box-shadow:0 2px 0 var(--panel);
+  }
+
+  .progress-dots{display:flex;justify-content:center;gap:8px;margin-bottom:18px;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--panel);border:2px solid var(--panel);}
+  .dot.done{background:var(--sage);border-color:var(--sage);}
+  .dot.current{background:var(--gold);border-color:var(--gold-deep);}
+
+  .phrase-label{
+    font-size:14px;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--ink-soft);text-align:center;margin-bottom:10px;font-family:'Atkinson Hyperlegible';font-weight:700;
+  }
+  .phrase-text{
+    font-size:clamp(28px,7vw,40px);
+    text-align:center;
+    line-height:1.25;
+    color:var(--ink);
+    margin:0 0 8px;
+  }
+
+  /* Arc meter */
+  .arc-wrap{position:relative;width:220px;height:130px;margin:20px auto 8px;}
+  svg.arc{width:220px;height:130px;display:block;}
+  .arc-label{
+    position:absolute;bottom:6px;left:0;right:0;text-align:center;
+    font-size:14px;color:var(--ink-soft);font-weight:700;
+  }
+  .arc-status{
+    position:absolute;top:52px;left:0;right:0;text-align:center;
+    font-size:15px;color:var(--ink-soft);
+  }
+
+  .mic-btn{
+    display:block;margin:14px auto 4px;
+    width:88px;height:88px;border-radius:50%;
+    background:var(--gold);border:none;cursor:pointer;
+    box-shadow:0 4px 0 var(--gold-deep);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform 0.08s ease;
+  }
+  .mic-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--gold-deep);}
+  .mic-btn.recording{background:var(--brick);box-shadow:0 4px 0 #8a3a29;}
+  .mic-btn:focus-visible{outline:3px solid var(--ring);outline-offset:3px;}
+  .mic-btn svg{width:34px;height:34px;}
+  .mic-caption{text-align:center;color:var(--ink-soft);font-size:15px;margin:6px 0 0;min-height:20px;}
+  .live-transcript{
+    text-align:center;font-size:20px;font-weight:700;color:var(--gold-deep);
+    min-height:28px;margin:4px 0 0;
+  }
+
+  .results{margin-top:18px;}
+  .score-row{display:flex;gap:12px;margin-bottom:14px;}
+  .score-box{flex:1;background:var(--panel);border-radius:14px;padding:14px;text-align:center;}
+  .score-box .num{font-family:'Fraunces';font-size:28px;font-weight:600;}
+  .score-box .lbl{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+  .score-box.good{background:var(--sage-bg);}
+  .score-box.good .num{color:var(--sage);}
+  .score-box.bad{background:var(--brick-bg);}
+  .score-box.bad .num{color:var(--brick);}
+
+  .heard{background:var(--panel);border-radius:14px;padding:14px 16px;font-size:18px;margin-bottom:14px;}
+  .heard .lbl{font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;display:block;margin-bottom:6px;}
+  .word{padding:1px 3px;border-radius:4px;}
+  .word.hit{background:var(--sage-bg);color:var(--sage);}
+  .word.miss{background:var(--brick-bg);color:var(--brick);text-decoration:line-through;}
+
+  .btn-row{display:flex;gap:10px;margin-top:6px;}
+  button.action{
+    flex:1;padding:14px 10px;font-size:17px;font-family:inherit;font-weight:700;
+    border-radius:12px;border:2px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;
+  }
+  button.action.secondary{background:#fff;color:var(--ink);}
+  button.action:focus-visible{outline:3px solid var(--ring);outline-offset:2px;}
+
+  .footer-nav{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+  .link-btn{
+    background:none;border:none;color:var(--ink-soft);font-family:inherit;font-size:15px;
+    text-decoration:underline;cursor:pointer;padding:8px;
+  }
+  .link-btn:focus-visible{outline:3px solid var(--ring);}
+
+  .banner{
+    background:var(--brick-bg);color:var(--brick);border-radius:12px;padding:12px 16px;
+    font-size:15px;margin-bottom:16px;text-align:center;
+  }
+
+  /* Settings panel */
+  .overlay{
+    position:fixed;inset:0;background:rgba(43,43,54,0.45);
+    display:flex;align-items:flex-end;justify-content:center;z-index:20;
+  }
+  .sheet{
+    background:var(--bg);width:100%;max-width:640px;max-height:88vh;overflow-y:auto;
+    border-radius:20px 20px 0 0;padding:22px;
+  }
+  .sheet h2{margin:0 0 14px;font-size:22px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-weight:700;font-size:14px;margin-bottom:6px;}
+  .field input[type=text], .field input[type=range]{width:100%;font-family:inherit;font-size:16px;}
+  .field input[type=text]{padding:10px;border-radius:8px;border:2px solid var(--panel);}
+  .field textarea{width:100%;font-family:inherit;font-size:15px;padding:10px;border-radius:8px;border:2px solid var(--panel);min-height:90px;resize:vertical;}
+  .phrase-list-item{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .phrase-list-item input{flex:1;padding:9px;border-radius:8px;border:2px solid var(--panel);font-family:inherit;font-size:15px;}
+  .remove-x{background:var(--brick-bg);color:var(--brick);border:none;border-radius:8px;width:36px;height:36px;font-size:18px;cursor:pointer;}
+  .history-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--panel);font-size:15px;}
+  .close-sheet{width:100%;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Say It Strong</h1>
+    <p>A little louder, a little clearer, one phrase at a time.</p>
+  </header>
+
+  <div id="unsupportedBanner" class="banner" style="display:none;">
+    This browser doesn't support speech recognition. Please open this page in Chrome or Edge.
+  </div>
+
+  <div class="card">
+    <div class="progress-dots" id="progressDots"></div>
+
+    <div class="phrase-label" id="phraseLabel">Phrase 1 of 8</div>
+    <p class="phrase-text" id="phraseText">Loading…</p>
+
+    <div class="arc-wrap">
+      <svg class="arc" viewBox="0 0 220 130">
+        <path d="M20,120 A90,90 0 0,1 200,120" fill="none" stroke="#F0E8D8" stroke-width="16" stroke-linecap="round"/>
+        <path id="arcFill" d="M20,120 A90,90 0 0,1 200,120" fill="none" stroke="#D9A441" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 400"/>
+        <line id="arcTarget" x1="110" y1="30" x2="110" y2="46" stroke="#5B8266" stroke-width="4" stroke-linecap="round" transform="rotate(0 110 120)"/>
+      </svg>
+      <div class="arc-status" id="arcStatus">Tap the mic and say the phrase</div>
+      <div class="arc-label">Your Voice</div>
+    </div>
+
+    <button class="mic-btn" id="micBtn" aria-label="Start recording">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+      </svg>
+    </button>
+    <p class="mic-caption" id="micCaption">Ready when you are</p>
+    <p class="live-transcript" id="liveTranscript"></p>
+
+    <div class="results" id="results" style="display:none;">
+      <div class="score-row">
+        <div class="score-box" id="wordBox">
+          <div class="num" id="wordScoreNum">–</div>
+          <div class="lbl">Words right</div>
+        </div>
+        <div class="score-box" id="loudBox">
+          <div class="num" id="loudScoreNum">–</div>
+          <div class="lbl">Loudness</div>
+        </div>
+      </div>
+      <div class="heard">
+        <span class="lbl">What I heard</span>
+        <span id="heardText"></span>
+      </div>
+      <div class="btn-row">
+        <button class="action secondary" id="retryBtn">Try again</button>
+        <button class="action" id="nextBtn">Next phrase →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <button class="link-btn" id="calibrateBtn">Reset baseline voice</button>
+    <button class="link-btn" id="settingsBtn">Phrases &amp; progress</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" style="display:none;">
+  <div class="sheet">
+    <h2>Phrases</h2>
+    <div id="phraseListEditor"></div>
+    <div class="field">
+      <input type="text" id="newPhraseInput" placeholder="Add a new phrase…">
+    </div>
+    <button class="action secondary" id="addPhraseBtn" style="width:100%;margin-bottom:20px;">+ Add phrase</button>
+
+    <div class="field">
+      <label for="bulkImportInput">Load a whole list at once (one phrase per line)</label>
+      <textarea id="bulkImportInput" placeholder="Good morning, how are you&#10;I would like a cup of tea&#10;..."></textarea>
+    </div>
+    <button class="action secondary" id="bulkImportBtn" style="width:100%;margin-bottom:8px;">Import list</button>
+    <button class="action secondary" id="replaceListBtn" style="width:100%;margin-bottom:20px;">Replace whole list with this</button>
+
+    <h2>Progress</h2>
+    <div id="historyList" style="margin-bottom:10px;"></div>
+
+    <button class="action close-sheet" id="closeSheetBtn">Done</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const DEFAULT_PHRASES = [
+    "Good morning, how are you",
+    "I would like a cup of tea",
+    "The weather is lovely today",
+    "Please pass the newspaper",
+    "I am feeling much better",
+    "Thank you very much indeed",
+    "Can you help me stand up",
+    "I enjoyed that very much"
+  ];
+
+  let phrases = DEFAULT_PHRASES.slice();
+  let currentIndex = 0;
+  let baseline = null; // relative amplitude baseline
+  let sessionResults = {}; // phraseId -> {wordScore, loudScore} for dot coloring this session
+
+  const el = {
+    unsupportedBanner: document.getElementById('unsupportedBanner'),
+    progressDots: document.getElementById('progressDots'),
+    phraseLabel: document.getElementById('phraseLabel'),
+    phraseText: document.getElementById('phraseText'),
+    arcFill: document.getElementById('arcFill'),
+    arcStatus: document.getElementById('arcStatus'),
+    micBtn: document.getElementById('micBtn'),
+    micCaption: document.getElementById('micCaption'),
+    results: document.getElementById('results'),
+    wordScoreNum: document.getElementById('wordScoreNum'),
+    loudScoreNum: document.getElementById('loudScoreNum'),
+    wordBox: document.getElementById('wordBox'),
+    loudBox: document.getElementById('loudBox'),
+    heardText: document.getElementById('heardText'),
+    retryBtn: document.getElementById('retryBtn'),
+    nextBtn: document.getElementById('nextBtn'),
+    calibrateBtn: document.getElementById('calibrateBtn'),
+    settingsBtn: document.getElementById('settingsBtn'),
+    overlay: document.getElementById('overlay'),
+    phraseListEditor: document.getElementById('phraseListEditor'),
+    newPhraseInput: document.getElementById('newPhraseInput'),
+    addPhraseBtn: document.getElementById('addPhraseBtn'),
+    historyList: document.getElementById('historyList'),
+    closeSheetBtn: document.getElementById('closeSheetBtn'),
+    liveTranscript: document.getElementById('liveTranscript'),
+    bulkImportInput: document.getElementById('bulkImportInput'),
+    bulkImportBtn: document.getElementById('bulkImportBtn'),
+    replaceListBtn: document.getElementById('replaceListBtn'),
+  };
+
+  const ARC_LEN = 283; // approx path length for the arc
+
+  function setArc(fraction, color){
+    fraction = Math.max(0, Math.min(1, fraction));
+    el.arcFill.setAttribute('stroke-dasharray', (ARC_LEN*fraction) + ' ' + ARC_LEN);
+    if(color) el.arcFill.setAttribute('stroke', color);
+  }
+
+  function renderDots(){
+    el.progressDots.innerHTML = '';
+    phrases.forEach((p,i)=>{
+      const d = document.createElement('div');
+      d.className = 'dot' + (i===currentIndex ? ' current' : (sessionResults[i] ? ' done' : ''));
+      el.progressDots.appendChild(d);
+    });
+  }
+
+  function renderPhrase(){
+    el.phraseLabel.textContent = 'Phrase ' + (currentIndex+1) + ' of ' + phrases.length;
+    el.phraseText.textContent = phrases[currentIndex];
+    el.results.style.display = 'none';
+    el.micCaption.textContent = 'Ready when you are';
+    el.liveTranscript.textContent = '';
+    setArc(0);
+    el.arcStatus.textContent = 'Tap the mic and say the phrase';
+    renderDots();
+  }
+
+  // ---------- Storage ----------
+  async function loadPhrases(){
+    try{
+      const r = await window.storage.get('phrases', false);
+      if(r && r.value){
+        const parsed = JSON.parse(r.value);
+        if(Array.isArray(parsed) && parsed.length) phrases = parsed;
+      }
+    }catch(e){ /* no saved phrases yet, use defaults */ }
+    renderPhrase();
+  }
+  async function savePhrases(){
+    try{ await window.storage.set('phrases', JSON.stringify(phrases), false); }
+    catch(e){ console.error('save phrases failed', e); }
+  }
+  async function loadBaseline(){
+    try{
+      const r = await window.storage.get('baseline', false);
+      if(r && r.value) baseline = JSON.parse(r.value);
+    }catch(e){ /* none yet */ }
+  }
+  async function saveBaseline(){
+    try{ await window.storage.set('baseline', JSON.stringify(baseline), false); }
+    catch(e){ console.error(e); }
+  }
+  async function logResult(phraseText, wordScore, loudScore){
+    const key = 'history:' + btoa(unescape(encodeURIComponent(phraseText))).slice(0,40);
+    let arr = [];
+    try{
+      const r = await window.storage.get(key, false);
+      if(r && r.value) arr = JSON.parse(r.value);
+    }catch(e){ /* first time */ }
+    arr.push({date: new Date().toISOString(), wordScore, loudScore});
+    if(arr.length > 20) arr = arr.slice(arr.length-20);
+    try{ await window.storage.set(key, JSON.stringify(arr), false); }catch(e){ console.error(e); }
+  }
+  async function getHistorySummary(){
+    const out = [];
+    for(const p of phrases){
+      const key = 'history:' + btoa(unescape(encodeURIComponent(p))).slice(0,40);
+      try{
+        const r = await window.storage.get(key, false);
+        if(r && r.value){
+          const arr = JSON.parse(r.value);
+          if(arr.length){
+            const last = arr[arr.length-1];
+            const avgWord = Math.round(arr.reduce((s,x)=>s+x.wordScore,0)/arr.length);
+            out.push({phrase:p, attempts:arr.length, lastWord:last.wordScore, lastLoud:last.loudScore, avgWord});
+          }
+        }
+      }catch(e){ /* no history for this phrase */ }
+    }
+    return out;
+  }
+
+  // ---------- Speech recognition setup ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let recognizing = false;
+  let audioCtx, analyser, micStream, rafId;
+  let levels = [];
+
+  if(!SR){
+    el.unsupportedBanner.style.display = 'block';
+    el.micBtn.disabled = true;
+  } else {
+    recognition = new SR();
+    recognition.lang = 'en-GB';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+  }
+
+  function normalize(s){
+    return s.toLowerCase().replace(/[^a-z0-9' ]/g,'').split(/\s+/).filter(Boolean);
+  }
+
+  function levenshtein(a,b){
+    const m=a.length,n=b.length;
+    const dp=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+    for(let i=0;i<=m;i++)dp[i][0]=i;
+    for(let j=0;j<=n;j++)dp[0][j]=j;
+    for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){
+      dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+    }
+    return dp[m][n];
+  }
+
+  function scoreWords(target, heard){
+    const t = normalize(target);
+    const h = normalize(heard);
+    let hits = 0;
+    const markedTarget = t.map(tw=>{
+      const found = h.some(hw => hw===tw || levenshtein(hw,tw) <= Math.max(1, Math.floor(tw.length*0.25)));
+      if(found) hits++;
+      return {word: tw, hit: found};
+    });
+    const pct = t.length ? Math.round((hits/t.length)*100) : 0;
+    return {pct, markedTarget};
+  }
+
+  async function startMic(){
+    micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaStreamSource(micStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    levels = [];
+    const data = new Uint8Array(analyser.fftSize);
+    function tick(){
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for(let i=0;i<data.length;i++){
+        const v = (data[i]-128)/128;
+        sum += v*v;
+      }
+      const rms = Math.sqrt(sum/data.length);
+      levels.push(rms);
+      const target = baseline ? baseline*1.5 : 0.35;
+      const frac = Math.min(1, rms/(target*1.4));
+      setArc(frac, rms >= target ? '#5B8266' : '#D9A441');
+      if(rms >= target){
+        el.arcStatus.textContent = 'Great — nice and loud!';
+      } else {
+        el.arcStatus.textContent = 'Keep going, a little louder';
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  function stopMic(){
+    if(rafId) cancelAnimationFrame(rafId);
+    if(micStream) micStream.getTracks().forEach(t=>t.stop());
+    if(audioCtx) audioCtx.close();
+  }
+
+  function avgLevel(){
+    if(!levels.length) return 0;
+    // use top 40% of samples to reflect peak effort, not silence gaps
+    const sorted = [...levels].sort((a,b)=>b-a);
+    const top = sorted.slice(0, Math.max(1, Math.floor(sorted.length*0.4)));
+    return top.reduce((a,b)=>a+b,0)/top.length;
+  }
+
+  let finalTranscript = '';
+  let userStopped = false;
+  let maxTimeoutId = null;
+
+  el.micBtn.addEventListener('click', async ()=>{
+    if(!SR) return;
+    if(recognizing){
+      // Manual stop — he's finished the phrase
+      userStopped = true;
+      try{ recognition.stop(); }catch(e){}
+      return;
+    }
+
+    recognizing = true;
+    userStopped = false;
+    finalTranscript = '';
+    el.micBtn.classList.add('recording');
+    el.micBtn.setAttribute('aria-label','Stop recording — tap when finished');
+    el.micCaption.textContent = 'Listening… tap the mic again when finished';
+    el.liveTranscript.textContent = '';
+    el.results.style.display = 'none';
+
+    try{
+      await startMic();
+    }catch(e){
+      el.micCaption.textContent = 'Could not access microphone — check browser permissions.';
+      recognizing = false;
+      el.micBtn.classList.remove('recording');
+      return;
+    }
+
+    recognition.onresult = (event)=>{
+      let interim = '';
+      for(let i = event.resultIndex; i < event.results.length; i++){
+        const transcriptPiece = event.results[i][0].transcript;
+        if(event.results[i].isFinal){
+          finalTranscript += transcriptPiece + ' ';
+        } else {
+          interim += transcriptPiece;
+        }
+      }
+      el.liveTranscript.textContent = (finalTranscript + interim).trim();
+    };
+    recognition.onerror = (e)=>{
+      if(e.error === 'no-speech') return; // keep waiting, don't give up
+      el.micCaption.textContent = "Didn't catch that — tap the mic to try again.";
+    };
+    recognition.onend = ()=>{
+      if(!userStopped){
+        // Browser auto-stopped from a pause — just restart quietly so he isn't cut off
+        try{ recognition.start(); return; }catch(e){}
+      }
+      recognizing = false;
+      el.micBtn.classList.remove('recording');
+      el.micBtn.setAttribute('aria-label','Start recording');
+      if(maxTimeoutId) clearTimeout(maxTimeoutId);
+      finishAttempt(finalTranscript.trim() || el.liveTranscript.textContent);
+    };
+    recognition.start();
+
+    // Generous outer limit so a session can't run forever by accident
+    maxTimeoutId = setTimeout(()=>{
+      if(recognizing){ userStopped = true; try{recognition.stop();}catch(e){} }
+    }, 45000);
+  });
+
+  function finishAttempt(heardText){
+    stopMic();
+    const level = avgLevel();
+    const target = baseline ? baseline*1.5 : 0.35;
+    const loudPct = Math.round(Math.min(100, (level/target)*100));
+    const target_phrase = phrases[currentIndex];
+    const {pct, markedTarget} = scoreWords(target_phrase, heardText || '');
+
+    el.heardText.textContent = heardText || '(nothing heard)';
+    el.wordScoreNum.textContent = pct + '%';
+    el.loudScoreNum.textContent = loudPct + '%';
+    el.wordBox.className = 'score-box ' + (pct>=70?'good':'bad');
+    el.loudBox.className = 'score-box ' + (loudPct>=70?'good':'bad');
+    el.results.style.display = 'block';
+    el.micCaption.textContent = 'Tap next when ready';
+    setArc(Math.min(1,loudPct/100), loudPct>=70 ? '#5B8266':'#D9A441');
+    el.arcStatus.textContent = loudPct>=70 ? 'Great volume!' : 'Try a bit louder next time';
+
+    sessionResults[currentIndex] = true;
+    renderDots();
+    logResult(target_phrase, pct, loudPct);
+  }
+
+  el.retryBtn.addEventListener('click', ()=>{
+    el.results.style.display = 'none';
+    el.micCaption.textContent = 'Ready when you are';
+    el.liveTranscript.textContent = '';
+    setArc(0);
+    el.arcStatus.textContent = 'Tap the mic and say the phrase';
+  });
+
+  el.nextBtn.addEventListener('click', ()=>{
+    currentIndex = (currentIndex+1) % phrases.length;
+    renderPhrase();
+  });
+
+  // ---------- Calibration ----------
+  el.calibrateBtn.addEventListener('click', async ()=>{
+    el.micCaption.textContent = 'Say a normal sentence for 3 seconds…';
+    try{
+      await startMic();
+    }catch(e){
+      el.micCaption.textContent = 'Could not access microphone.';
+      return;
+    }
+    setTimeout(async ()=>{
+      const level = avgLevel();
+      baseline = level > 0.01 ? level : 0.1;
+      stopMic();
+      await saveBaseline();
+      el.micCaption.textContent = 'Baseline set — ready when you are';
+      setArc(0);
+    }, 3000);
+  });
+
+  // ---------- Settings sheet ----------
+  function renderPhraseEditor(){
+    el.phraseListEditor.innerHTML = '';
+    phrases.forEach((p,i)=>{
+      const row = document.createElement('div');
+      row.className = 'phrase-list-item';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = p;
+      input.addEventListener('change', ()=>{ phrases[i]=input.value; savePhrases(); });
+      const del = document.createElement('button');
+      del.className = 'remove-x';
+      del.textContent = '×';
+      del.setAttribute('aria-label','Remove phrase');
+      del.addEventListener('click', ()=>{
+        if(phrases.length<=1) return;
+        phrases.splice(i,1);
+        savePhrases();
+        if(currentIndex>=phrases.length) currentIndex=phrases.length-1;
+        renderPhraseEditor();
+        renderPhrase();
+      });
+      row.appendChild(input);
+      row.appendChild(del);
+      el.phraseListEditor.appendChild(row);
+    });
+  }
+
+  el.addPhraseBtn.addEventListener('click', ()=>{
+    const v = el.newPhraseInput.value.trim();
+    if(!v) return;
+    phrases.push(v);
+    el.newPhraseInput.value = '';
+    savePhrases();
+    renderPhraseEditor();
+    renderPhrase();
+  });
+
+  async function renderHistory(){
+    const summary = await getHistorySummary();
+    el.historyList.innerHTML = '';
+    if(!summary.length){
+      el.historyList.innerHTML = '<p style="color:var(--ink-soft);font-size:14px;">No sessions logged yet — practice a few phrases to see progress here.</p>';
+      return;
+    }
+    summary.forEach(s=>{
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      row.innerHTML = '<span>'+s.phrase+'</span><span>'+s.attempts+' tries · avg '+s.avgWord+'% words</span>';
+      el.historyList.appendChild(row);
+    });
+  }
+
+  function parseBulk(){
+    return el.bulkImportInput.value
+      .split('\n')
+      .map(s=>s.trim())
+      .filter(Boolean);
+  }
+
+  el.bulkImportBtn.addEventListener('click', ()=>{
+    const lines = parseBulk();
+    if(!lines.length) return;
+    phrases = phrases.concat(lines);
+    el.bulkImportInput.value = '';
+    savePhrases();
+    renderPhraseEditor();
+    renderPhrase();
+  });
+
+  el.replaceListBtn.addEventListener('click', ()=>{
+    const lines = parseBulk();
+    if(!lines.length) return;
+    if(!confirm('Replace the whole phrase list with these ' + lines.length + ' phrases? This removes the current list (past progress history is kept).')) return;
+    phrases = lines;
+    currentIndex = 0;
+    sessionResults = {};
+    el.bulkImportInput.value = '';
+    savePhrases();
+    renderPhraseEditor();
+    renderPhrase();
+  });
+
+  el.settingsBtn.addEventListener('click', async ()=>{
+    renderPhraseEditor();
+    await renderHistory();
+    el.overlay.style.display = 'flex';
+  });
+  el.closeSheetBtn.addEventListener('click', ()=>{
+    el.overlay.style.display = 'none';
+  });
+
+  // ---------- Init ----------
+  (async function init(){
+    await loadPhrases();
+    await loadBaseline();
+    renderPhrase();
+  })();
+})();
+</script>
+</body>
+</html>
